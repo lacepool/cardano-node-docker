@@ -3,5 +3,7 @@
 # Init vars
 source /scripts/init_node_vars
 
-BLOCK=$(cardano-cli query tip ${NETWORK_ARGUMENT} | jq -r '.blockNo')
-echo "${BLOCK}"
+function get_block {
+    BLOCK=$(cardano-cli query tip ${NETWORK_ARGUMENT} 2>&1 | jq -r '.blockNo' 2>&1)
+    echo "${BLOCK}"
+}
