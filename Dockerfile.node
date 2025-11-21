@@ -9,7 +9,7 @@ RUN apt-get update -y \
 # Install GHC
 ENV CABAL_VERSION=3.12.1.0 \
     GHC_VERSION=9.6.7 \
-    PATH="$HOME/.cabal/bin:/root/.ghcup/bin:$PATH"
+    PATH="${HOME:-/root}/.cabal/bin:/root/.ghcup/bin:${PATH:-}"
 RUN curl --proto '=https' --tlsv1.2 -sSf https://get-ghcup.haskell.org | sh \
     && ghcup install ghc ${GHC_VERSION} \
     && ghcup install cabal ${CABAL_VERSION} \
@@ -26,8 +26,8 @@ RUN git clone https://github.com/intersectmbo/libsodium \
     && make \
     && make install \
     && cd .. && rm -rf libsodium
-ENV LD_LIBRARY_PATH="/usr/local/lib:$LD_LIBRARY_PATH" \
-    PKG_CONFIG_PATH="/usr/local/lib/pkgconfig:$PKG_CONFIG_PATH"
+ENV LD_LIBRARY_PATH="/usr/local/lib:${LD_LIBRARY_PATH:-}" \
+    PKG_CONFIG_PATH="/usr/local/lib/pkgconfig:${PKG_CONFIG_PATH:-}"
 
 # Install Secp256k1
 RUN git clone https://github.com/bitcoin-core/secp256k1 \
@@ -47,7 +47,7 @@ COPY <<"EOT" /usr/local/lib/pkgconfig/libblst.pc
     Name: libblst
     Description: Multilingual BLS12-381 signature library
     URL: https://github.com/supranational/blst
-    Version: 0.3.10
+    Version: 0.3.14
     Cflags: -I\${includedir}
     Libs: -L\${libdir} -lblst
 EOT
@@ -76,8 +76,8 @@ RUN echo "Building tags/${VERSION}..." \
     && echo "package cardano-crypto-praos" >>  cabal.project.local \
     && echo "  flags: -external-libsodium-vrf" >>  cabal.project.local \ 
     && cabal update \
-    && cabal build all \
-    && cabal build cardano-cli \
+    && cabal build --verbose=2 all \
+    && cabal build --verbose=2 cardano-cli \
     && mkdir -p /root/.local/bin/ \
     && cp -p "$(./scripts/bin-path.sh cardano-node)" /root/.local/bin/ \
     && cp -p "$(./scripts/bin-path.sh cardano-cli)" /root/.local/bin/ \
